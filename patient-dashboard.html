@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard | HealthSecure</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --patient-primary: #1a6bb3;
+            --patient-secondary: #2c8bd6;
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--patient-primary), var(--patient-secondary));
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        .credential-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+        .permission-tag {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin: 2px;
+            display: inline-block;
+        }
+        .permission-tag.denied {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        .action-card {
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+        }
+        .medical-record {
+            border-left: 4px solid var(--patient-primary);
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2"><i class="fas fa-user-injured me-2"></i>Patient Dashboard</h1>
+                    <p class="mb-0">Welcome back, <span id="patientName">John Doe</span></p>
+                </div>
+                <div class="text-end">
+                    <div id="iamInfo" class="credential-badge d-inline-block me-3">
+                        <i class="fab fa-aws me-1"></i>
+                        <span id="currentRole">PatientRole</span>
+                    </div>
+                    <button class="btn btn-light btn-sm" onclick="awsSimulator.logout()">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Session Info -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-shield-alt me-2"></i>AWS IAM Session Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><small class="text-muted">IAM Role ARN:</small></p>
+                                <code id="roleArn" class="d-block mb-3">Loading...</code>
+                                
+                                <p class="mb-1"><small class="text-muted">Temporary Credentials:</small></p>
+                                <div class="mb-2">
+                                    <span class="badge bg-info me-1">AccessKeyId: ASIA...***</span>
+                                    <span class="badge bg-info">SessionToken: Active</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><small class="text-muted">IAM Permissions:</small></p>
+                                <div id="permissionsList">
+                                    <!-- Permissions will be loaded here -->
+                                </div>
+                                
+                                <p class="mb-1 mt-3"><small class="text-muted">Session Expires:</small></p>
+                                <span id="sessionExpiry" class="badge bg-warning">1 hour</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Records Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>My Medical Records</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="medicalRecords">
+                            <!-- Records will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AWS Actions -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card action-card h-100" onclick="viewMedicalRecords()">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-file-pdf fa-3x" style="color: var(--patient-primary);"></i>
+                        </div>
+                        <h5>View Medical Reports</h5>
+                        <p class="text-muted small">Access your medical records from S3</p>
+                        <div class="mt-3">
+                            <span class="badge bg-light text-dark">s3:GetObject</span>
+                        </div>
+                        <button class="btn btn-outline-primary mt-3">Access Records</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card action-card h-100" onclick="testS3Upload()">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-cloud-upload-alt fa-3x" style="color: #6c757d;"></i>
+                        </div>
+                        <h5>Upload Document</h5>
+                        <p class="text-muted small">Upload medical documents to S3</p>
+                        <div class="mt-3">
+                            <span class="badge bg-light text-dark">s3:PutObject</span>
+                        </div>
+                        <button class="btn btn-outline-secondary mt-3">Test Upload</button>
+                        <div id="uploadResult" class="mt-2 small"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card action-card h-100" onclick="checkDatabaseConnection()">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-database fa-3x" style="color: #28a745;"></i>
+                        </div>
+                        <h5>Database Access</h5>
+                        <p class="text-muted small">Connect to RDS PostgreSQL</p>
+                        <div class="mt-3">
+                            <span class="badge bg-light text-dark">rds:connect</span>
+                        </div>
+                        <button class="btn btn-outline-success mt-3">Test Connection</button>
+                        <div id="dbResult" class="mt-2 small"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AWS Service Status -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fab fa-aws me-2"></i>AWS Service Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="awsStatus">
+                            <!-- Status will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AWS Simulator Script -->
+    <script src="js/aws-simulator.js"></script>
+    
+    <script>
+        // Check if user is authenticated
+        document.addEventListener('DOMContentLoaded', async function() {
+            const credentials = awsSimulator.getCurrentCredentials();
+            if (!credentials) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load dashboard data
+            loadDashboard();
+            loadMedicalRecords();
+            loadAWSStatus();
+        });
+
+        async function loadDashboard() {
+            const credentials = awsSimulator.getCurrentCredentials();
+            const role = sessionStorage.getItem('currentRole');
+            const permissions = JSON.parse(sessionStorage.getItem('iamPermissions') || '[]');
+            
+            // Update UI
+            document.getElementById('roleArn').textContent = credentials.RoleArn;
+            document.getElementById('currentRole').textContent = role.charAt(0).toUpperCase() + role.slice(1) + 'Role';
+            
+            // Display permissions
+            const permissionsDiv = document.getElementById('permissionsList');
+            permissionsDiv.innerHTML = '';
+            permissions.forEach(perm => {
+                const tag = document.createElement('span');
+                tag.className = 'permission-tag';
+                tag.textContent = perm;
+                permissionsDiv.appendChild(tag);
+            });
+        }
+
+        async function loadMedicalRecords() {
+            try {
+                // Simulate S3 ListObjects call
+                const result = await awsSimulator.simulateAWSCall('s3', 'ListObjects', {
+                    Bucket: 'patient-portal-medical-records-hamid',
+                    Prefix: 'medical-reports/'
+                });
+                
+                const recordsDiv = document.getElementById('medicalRecords');
+                recordsDiv.innerHTML = `
+                    <div class="col-md-6 mb-3">
+                        <div class="card medical-record">
+                            <div class="card-body">
+                                <h6><i class="fas fa-file-pdf text-danger me-2"></i>Blood Test Report</h6>
+                                <p class="small text-muted mb-2">Uploaded: 2024-03-15 by Dr. Smith</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-info">PDF • 2.4 MB</span>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="downloadReport('blood-test.pdf')">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card medical-record">
+                            <div class="card-body">
+                                <h6><i class="fas fa-file-medical text-success me-2"></i>X-Ray Scan Results</h6>
+                                <p class="small text-muted mb-2">Uploaded: 2024-03-10 by Dr. Johnson</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-info">DICOM • 15.2 MB</span>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="downloadReport('xray-scan.dcm')">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading records:', error);
+            }
+        }
+
+        async function viewMedicalRecords() {
+            try {
+                // Check permission
+                if (!awsSimulator.checkPermission('s3:GetObject')) {
+                    alert('Access Denied: Your IAM role does not have permission to view medical records.');
+                    return;
+                }
+                
+                // Simulate getting a medical record
+                const result = await awsSimulator.simulateAWSCall('s3', 'GetObject', {
+                    Bucket: 'patient-portal-medical-records-hamid',
+                    Key: 'medical-reports/patient001.pdf'
+                });
+                
+                alert('✅ Successfully retrieved medical record from S3!\n\n' +
+                      'File: patient001.pdf\n' +
+                      'Size: 2.4 MB\n' +
+                      'Encrypted: Yes (SSE-S3)\n' +
+                      'Request ID: ' + result.ResponseMetadata.RequestId);
+                      
+            } catch (error) {
+                alert('❌ ' + error.message);
+            }
+        }
+
+        async function testS3Upload() {
+            const uploadResult = document.getElementById('uploadResult');
+            
+            try {
+                // This should fail for PatientRole
+                const result = await awsSimulator.simulateAWSCall('s3', 'PutObject', {
+                    Bucket: 'patient-portal-medical-records-hamid',
+                    Key: 'upload-test.txt',
+                    Body: 'Test upload content'
+                });
+                
+                uploadResult.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Upload successful!</span>';
+            } catch (error) {
+                uploadResult.innerHTML = `<span class="text-danger"><i class="fas fa-times"></i> ${error.message}</span>`;
+            }
+        }
+
+        async function checkDatabaseConnection() {
+            const dbResult = document.getElementById('dbResult');
+            
+            try {
+                const result = await awsSimulator.simulateAWSCall('rds', 'DescribeDBInstances');
+                
+                dbResult.innerHTML = `
+                    <span class="text-success">
+                        <i class="fas fa-check"></i> Connected to RDS PostgreSQL!<br>
+                        <small>Endpoint: ${result.DBInstances[0].Endpoint.Address}</small>
+                    </span>
+                `;
+            } catch (error) {
+                dbResult.innerHTML = `<span class="text-danger"><i class="fas fa-times"></i> ${error.message}</span>`;
+            }
+        }
+
+        async function downloadReport(filename) {
+            try {
+                // Check permission
+                if (!awsSimulator.checkPermission('s3:GetObject')) {
+                    alert('Access Denied: Cannot download file');
+                    return;
+                }
+                
+                // Simulate download
+                const result = await awsSimulator.simulateAWSCall('s3', 'GetObject', {
+                    Bucket: 'patient-portal-medical-records-hamid',
+                    Key: 'medical-reports/' + filename
+                });
+                
+                alert(`✅ File downloaded successfully!\n\n` +
+                      `Filename: ${filename}\n` +
+                      `Content Type: ${result.ContentType}\n` +
+                      `Encryption: AES-256\n` +
+                      `IAM Role: ${sessionStorage.getItem('currentRole')}\n\n` +
+                      `This simulates actual S3 GetObject with IAM authorization.`);
+                      
+            } catch (error) {
+                alert('❌ Download failed: ' + error.message);
+            }
+        }
+
+        async function loadAWSStatus() {
+            const statusDiv = document.getElementById('awsStatus');
+            statusDiv.innerHTML = `
+                <div class="col-md-3 mb-3">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h6><i class="fas fa-database me-2"></i>RDS PostgreSQL</h6>
+                            <p class="mb-0 small">Status: <span class="text-success">Available</span></p>
+                            <p class="mb-0 small">Encryption: <span class="text-success">Enabled</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h6><i class="fas fa-cloud me-2"></i>S3 Storage</h6>
+                            <p class="mb-0 small">Buckets: <span class="text-primary">2</span></p>
+                            <p class="mb-0 small">Versioning: <span class="text-primary">Enabled</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h6><i class="fas fa-shield-alt me-2"></i>IAM</h6>
+                            <p class="mb-0 small">MFA: <span class="text-info">Enabled</span></p>
+                            <p class="mb-0 small">Session: <span class="text-info">Active</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h6><i class="fas fa-history me-2"></i>CloudTrail</h6>
+                            <p class="mb-0 small">Logging: <span class="text-warning">Active</span></p>
+                            <p class="mb-0 small">Events: <span class="text-warning">247</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
