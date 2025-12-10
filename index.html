@@ -3,277 +3,643 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live AWS Security Demo | HealthSecure Portal</title>
+    <title>HealthSecure Portal | HIPAA-Compliant Patient Management System</title>
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --aws-orange: #FF9900;
-            --aws-dark: #232F3E;
+            --primary-blue: #1a6bb3;
+            --secondary-blue: #2c8bd6;
+            --accent-teal: #00b4b3;
+            --success-green: #28a745;
+            --warning-orange: #ff9800;
+            --danger-red: #dc3545;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
         }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .demo-card {
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
+        
+        .navbar-brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--primary-blue) !important;
         }
-        .aws-badge {
-            background: linear-gradient(90deg, var(--aws-orange), #FF6600);
+        
+        .navbar-brand i {
+            color: var(--accent-teal);
+        }
+        
+        .hero-section {
+            background: linear-gradient(rgba(26, 107, 179, 0.9), rgba(44, 139, 214, 0.9)), 
+                        url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
             color: white;
-            font-weight: bold;
-            padding: 8px 20px;
-            border-radius: 30px;
-            display: inline-block;
+            padding: 100px 0;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 50px;
         }
-        .permission-allowed {
-            color: #198754;
-            font-weight: bold;
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            border-top: 5px solid var(--primary-blue);
         }
-        .permission-denied {
-            color: #dc3545;
-            font-weight: bold;
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
         }
-        .btn-role {
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 1.8rem;
+        }
+        
+        .role-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .role-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+        }
+        
+        .btn-cta {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            border: none;
             transition: all 0.3s;
         }
-        .btn-role:hover {
+        
+        .btn-cta:hover {
             transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(26, 107, 179, 0.3);
+            color: white;
         }
-        .log-entry {
-            font-family: 'Courier New', monospace;
-            background: #1e1e1e;
-            color: #00ff00;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 0.9rem;
+        
+        .security-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-teal), #008080);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .footer {
+            background: var(--dark-gray);
+            color: white;
+            padding: 50px 0 20px;
+            margin-top: 80px;
+        }
+        
+        .aws-badge {
+            background: linear-gradient(135deg, #FF9900, #FF6600);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            margin: 0 auto;
+        }
+        
+        .login-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .login-option:hover {
+            border-color: var(--primary-blue);
+            background: rgba(26, 107, 179, 0.05);
+        }
+        
+        .login-option.selected {
+            border-color: var(--primary-blue);
+            background: rgba(26, 107, 179, 0.1);
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 30px 0;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            line-height: 1;
+        }
+        
+        .data-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .data-table th {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 15px;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        
+        .action-btn {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .action-btn.view {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-green);
+        }
+        
+        .action-btn.edit {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-orange);
+        }
+        
+        .action-btn.delete {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger-red);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .aws-status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--success-green);
+        }
+        
+        .aws-status-card.warning {
+            border-left-color: var(--warning-orange);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .status-active {
+            background: var(--success-green);
+        }
+        
+        .status-warning {
+            background: var(--warning-orange);
+        }
+        
+        .status-inactive {
+            background: #dc3545;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 0;
+            }
+            
+            .feature-card {
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <!-- HEADER -->
-        <div class="text-center mb-5">
-            <h1 class="display-4 text-white fw-bold">
-                <i class="bi bi-shield-check"></i> HealthSecure – AWS Security Live Demo
-            </h1>
-            <p class="lead text-light">
-                HIPAA‑Compliant Patient Portal | IAM Roles | Encryption | Global CDN
-            </p>
-            <div class="mt-3">
-                <span class="aws-badge">Served via AWS CloudFront</span>
-                <span class="badge bg-success">HTTPS Enforced</span>
-                <span class="badge bg-info">Global Access</span>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shield-alt me-2"></i>HealthSecure
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="security-status.html">Security Status</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                </ul>
+                <a href="login.html" class="btn btn-cta ms-3">
+                    <i class="fas fa-sign-in-alt me-2"></i>Access Portal
+                </a>
             </div>
         </div>
+    </nav>
 
-        <div class="row">
-            <!-- LEFT PANEL: IAM & PERMISSIONS -->
-            <div class="col-lg-4 mb-4">
-                <div class="demo-card p-4 h-100">
-                    <h4 class="text-dark mb-3"><i class="bi bi-person-badge"></i> IAM Role Simulation</h4>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-4">Secure Patient Healthcare Portal</h1>
+                    <p class="lead mb-4">A HIPAA-compliant, AWS-powered platform for secure patient-doctor communication, medical record management, and healthcare administration.</p>
                     <div class="mb-4">
-                        <p class="mb-2"><strong>Current Role:</strong></p>
-                        <div class="btn-group w-100" role="group">
-                            <button class="btn btn-outline-primary btn-role active" onclick="switchRole('patient')">
-                                <i class="bi bi-person"></i> PatientRole
-                            </button>
-                            <button class="btn btn-outline-success btn-role" onclick="switchRole('doctor')">
-                                <i class="bi bi-stethoscope"></i> DoctorRole
-                            </button>
-                            <button class="btn btn-outline-danger btn-role" onclick="switchRole('admin')">
-                                <i class="bi bi-shield-check"></i> AdminRole
-                            </button>
-                        </div>
+                        <span class="security-badge"><i class="fas fa-lock me-1"></i> HIPAA Compliant</span>
+                        <span class="security-badge"><i class="fas fa-shield-alt me-1"></i> End-to-End Encryption</span>
+                        <span class="security-badge"><i class="fas fa-cloud me-1"></i> AWS Cloud Hosted</span>
+                        <span class="security-badge"><i class="fas fa-user-shield me-1"></i> IAM Protected</span>
                     </div>
-
-                    <h5><i class="bi bi-key"></i> Permissions</h5>
-                    <ul class="list-group list-group-flush mb-4">
-                        <li class="list-group-item d-flex justify-content-between">
-                            s3:GetObject
-                            <span class="permission-allowed" id="perm-get">✅ Allowed</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between">
-                            s3:PutObject
-                            <span class="permission-denied" id="perm-put">❌ Denied</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between">
-                            rds:Connect
-                            <span class="permission-allowed" id="perm-rds">✅ Allowed</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between">
-                            cloudtrail:LookupEvents
-                            <span class="permission-denied" id="perm-trail">❌ Denied</span>
-                        </li>
-                    </ul>
-
                     <div class="mt-4">
-                        <h6><i class="bi bi-activity"></i> Quick Actions</h6>
-                        <button class="btn btn-success w-100 mb-2" onclick="simulateAction('download')">
-                            <i class="bi bi-cloud-download"></i> Download Medical Report
-                        </button>
-                        <button class="btn btn-warning w-100 mb-2" onclick="simulateAction('upload')">
-                            <i class="bi bi-cloud-upload"></i> Upload Lab Report
-                        </button>
-                        <button class="btn btn-info w-100" onclick="simulateAction('audit')">
-                            <i class="bi bi-list-check"></i> View Audit Logs
-                        </button>
+                        <span class="aws-badge">
+                            <i class="fab fa-aws me-2"></i> Powered by Amazon Web Services
+                        </span>
                     </div>
                 </div>
-            </div>
-
-            <!-- CENTER PANEL: AWS STATUS & RESULTS -->
-            <div class="col-lg-5 mb-4">
-                <div class="demo-card p-4 h-100">
-                    <h4 class="text-dark mb-3"><i class="bi bi-aws"></i> AWS Service Status</h4>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card border-success mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title"><i class="bi bi-check-circle text-success"></i> S3</h5>
-                                    <p class="card-text">Bucket Encryption: <strong>Enabled (SSE‑S3)</strong></p>
-                                    <p class="card-text">Versioning: <strong>Active</strong></p>
-                                </div>
-                            </div>
-                            <div class="card border-primary mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title"><i class="bi bi-check-circle text-primary"></i> RDS</h5>
-                                    <p class="card-text">Encryption: <strong>Enabled (KMS)</strong></p>
-                                    <p class="card-text">Multi‑AZ: <strong>Yes</strong></p>
-                                </div>
-                            </div>
+                <div class="col-lg-4 text-center">
+                    <div class="login-box">
+                        <h4 class="mb-4">Quick Access</h4>
+                        <div class="login-option" onclick="window.location.href='login.html?role=patient'">
+                            <i class="fas fa-user-injured fa-3x mb-3" style="color: var(--primary-blue);"></i>
+                            <h5>Patient Login</h5>
+                            <p class="text-muted small">Access your medical records and reports</p>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card border-warning mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title"><i class="bi bi-check-circle text-warning"></i> CloudFront</h5>
-                                    <p class="card-text">HTTPS: <strong>Enforced</strong></p>
-                                    <p class="card-text">CDN: <strong>Global</strong></p>
-                                </div>
-                            </div>
-                            <div class="card border-info mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title"><i class="bi bi-check-circle text-info"></i> IAM</h5>
-                                    <p class="card-text">MFA: <strong>Enabled</strong></p>
-                                    <p class="card-text">Least Privilege: <strong>Enforced</strong></p>
-                                </div>
-                            </div>
+                        <div class="login-option" onclick="window.location.href='login.html?role=doctor'">
+                            <i class="fas fa-user-md fa-3x mb-3" style="color: var(--accent-teal);"></i>
+                            <h5>Doctor Login</h5>
+                            <p class="text-muted small">Manage patient records and upload reports</p>
                         </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <h5><i class="bi bi-terminal"></i> Action Result Log</h5>
-                        <div class="log-entry" id="actionLog">
-                            [08:30] IAM: Session started as PatientRole<br>
-                            [08:31] S3: GetObject allowed for patient_report.pdf<br>
-                            [08:32] S3: PutObject denied – insufficient permissions<br>
+                        <div class="login-option" onclick="window.location.href='login.html?role=admin'">
+                            <i class="fas fa-user-shield fa-3x mb-3" style="color: var(--warning-orange);"></i>
+                            <h5>Admin Login</h5>
+                            <p class="text-muted small">System administration and security monitoring</p>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- RIGHT PANEL: ARCHITECTURE & GLOBAL ACCESS -->
-            <div class="col-lg-3 mb-4">
-                <div class="demo-card p-4 h-100">
-                    <h4 class="text-dark mb-3"><i class="bi bi-diagram-3"></i> Architecture</h4>
-                    <div class="text-center mb-4">
-                        <img src="https://img.icons8.com/color/96/000000/amazon-web-services.png" class="mb-2">
-                        <p class="small">AWS Cloud‑Native Deployment</p>
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Enterprise-Grade Security Features</h2>
+                <p class="text-muted">Built with AWS best practices for healthcare compliance</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-lock"></i>
+                        </div>
+                        <h4 class="fw-bold">IAM Role-Based Access</h4>
+                        <p class="text-muted">Granular permissions with AWS IAM roles. Patients, doctors, and administrators have precisely defined access levels following least-privilege principle.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i> Multi-Factor Authentication</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Temporary Security Credentials</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Session Management</li>
+                        </ul>
                     </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h4 class="fw-bold">Encrypted Data Storage</h4>
+                        <p class="text-muted">All Protected Health Information (PHI) encrypted at rest and in transit using AWS KMS and TLS 1.2 encryption protocols.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i> AES-256 Encryption</li>
+                            <li><i class="fas fa-check text-success me-2"></i> KMS Key Rotation</li>
+                            <li><i class="fas fa-check text-success me-2"></i> S3 Versioning & Backup</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="fw-bold">Comprehensive Monitoring</h4>
+                        <p class="text-muted">Real-time monitoring with AWS CloudTrail, CloudWatch, and GuardDuty for complete audit trail and threat detection.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i> API Call Logging</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Anomaly Detection</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Automated Alerts</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role-Based Access Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Role-Based Portal Access</h2>
+                <p class="text-muted">Different interfaces and permissions for each user role</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="fas fa-user-injured"></i>
+                        </div>
+                        <h4 class="fw-bold">Patient Portal</h4>
+                        <p class="text-muted">Patients can securely access their medical history, lab results, and communicate with healthcare providers.</p>
+                        <div class="mt-3">
+                            <span class="badge bg-info me-1">View Records</span>
+                            <span class="badge bg-info me-1">Download Reports</span>
+                            <span class="badge bg-info">Message Doctors</span>
+                        </div>
+                        <button class="btn btn-cta mt-4" onclick="window.location.href='login.html?role=patient'">
+                            Access as Patient
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h4 class="fw-bold">Doctor Portal</h4>
+                        <p class="text-muted">Healthcare providers can manage patient records, upload test results, and prescribe medications.</p>
+                        <div class="mt-3">
+                            <span class="badge bg-success me-1">Upload Reports</span>
+                            <span class="badge bg-success me-1">Edit Records</span>
+                            <span class="badge bg-success">Prescribe Medications</span>
+                        </div>
+                        <button class="btn btn-cta mt-4" onclick="window.location.href='login.html?role=doctor'">
+                            Access as Doctor
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h4 class="fw-bold">Admin Portal</h4>
+                        <p class="text-muted">System administrators can monitor security, manage users, and ensure HIPAA compliance across the platform.</p>
+                        <div class="mt-3">
+                            <span class="badge bg-warning me-1">Audit Logs</span>
+                            <span class="badge bg-warning me-1">User Management</span>
+                            <span class="badge bg-warning">Security Monitoring</span>
+                        </div>
+                        <button class="btn btn-cta mt-4" onclick="window.location.href='login.html?role=admin'">
+                            Access as Admin
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AWS Architecture Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">AWS Cloud Architecture</h2>
+                <p class="text-muted">Built on Amazon Web Services for scalability and security</p>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="p-4">
+                        <h4 class="fw-bold mb-4">Technology Stack</h4>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fab fa-aws fa-2x me-3" style="color: #FF9900;"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Amazon EC2</h6>
+                                        <small class="text-muted">Compute Instances</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fab fa-aws fa-2x me-3" style="color: #527FFF;"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Amazon RDS</h6>
+                                        <small class="text-muted">PostgreSQL Database</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fab fa-aws fa-2x me-3" style="color: #569A31;"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Amazon S3</h6>
+                                        <small class="text-muted">Secure Storage</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fab fa-aws fa-2x me-3" style="color: #7D5BA6;"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">AWS IAM</h6>
+                                        <small class="text-muted">Identity Management</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fab fa-aws fa-2x me-3" style="color: #00A1C9;"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">AWS KMS</h6>
+                                        <small class="text-muted">Key Management</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fab fa-aws fa-2x me-3" style="color: #FF4F8B;"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">AWS CloudTrail</h6>
+                                        <small class="text-muted">Audit Logging</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="security-status.html" class="btn btn-cta mt-3">
+                            <i class="fas fa-chart-bar me-2"></i>View Live Security Status
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-4">
+                        <div class="card border-0 shadow-lg">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3">Architecture Diagram</h5>
+                                <div class="text-center">
+                                    <img src="https://d1.awsstatic.com/Products/product-name/diagrams/architecture-diagram_landing-page-diagram.6f0b3b8f5e6c4c4f8e8c8b8f5e6c4c4f.png" 
+                                         alt="AWS Architecture" 
+                                         class="img-fluid rounded"
+                                         style="max-height: 300px;">
+                                    <p class="text-muted small mt-3">Multi-tier AWS architecture with VPC, private subnets, load balancers, and encrypted data storage</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h4 class="fw-bold mb-4">
+                        <i class="fas fa-shield-alt me-2"></i>HealthSecure
+                    </h4>
+                    <p>A HIPAA-compliant patient portal built on AWS cloud infrastructure. Secure, scalable, and compliant with healthcare regulations.</p>
+                    <div class="mt-3">
+                        <span class="badge bg-light text-dark me-2">AWS Certified</span>
+                        <span class="badge bg-light text-dark">HIPAA Ready</span>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-4">Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> VPC with private/public subnets</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> EC2 in private subnet</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> RDS PostgreSQL encrypted</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> S3 for secure storage</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> CloudFront + WAF</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> CloudTrail + CloudWatch</li>
+                        <li class="mb-2"><a href="login.html" class="text-light text-decoration-none"><i class="fas fa-arrow-right me-2"></i>Portal Login</a></li>
+                        <li class="mb-2"><a href="security-status.html" class="text-light text-decoration-none"><i class="fas fa-arrow-right me-2"></i>Security Dashboard</a></li>
+                        <li class="mb-2"><a href="#features" class="text-light text-decoration-none"><i class="fas fa-arrow-right me-2"></i>Features</a></li>
                     </ul>
-                    <hr>
-                    <h6><i class="bi bi-globe"></i> Global Access</h6>
-                    <p class="small">This page is delivered via <strong>AWS CloudFront CDN</strong> from S3 origin. Encrypted in transit (TLS 1.2).</p>
-                    <div class="text-center mt-3">
-                        <button class="btn btn-outline-dark w-100" onclick="showCloudFrontUrl()">
-                            <i class="bi bi-link-45deg"></i> Show CloudFront URL
-                        </button>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-4">Project Information</h5>
+                    <p class="text-light small">
+                        <strong>Course:</strong> IS-348 Cloud Architecture Engineering and Security<br>
+                        <strong>Project:</strong> HIPAA-Compliant Patient Portal on AWS<br>
+                        <strong>Team:</strong> Gc Hamid & Gc Ahmed Inam Cheema<br>
+                        <strong>Platform:</strong> AWS Amplify Hosting
+                    </p>
+                    <div class="mt-3">
+                        <a href="#" class="text-light me-3"><i class="fab fa-github fa-lg"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-aws fa-lg"></i></a>
+                        <a href="#" class="text-light"><i class="fas fa-code fa-lg"></i></a>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- FOOTER -->
-        <div class="text-center mt-5 pt-4">
-            <div class="text-light small">
-                <p>
-                    <i class="bi bi-code-slash"></i> Duo Behind Art : <strong>Gc Hamid Gc Cheema</strong> |
-                    IS‑348 Cloud CEP | AWS HIPAA‑Ready Architecture
-                </p>
-                <p class="text-light-50">
-                    🔐 This is a simulation for academic demonstration. Real AWS IAM policies, encryption, and logging are implemented in the backend.
-                </p>
+            <hr class="bg-light my-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0 small">© 2024 HealthSecure Portal. Academic Project for IS-348.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 small">
+                        <i class="fas fa-globe-americas me-1"></i> 
+                        Served via AWS Amplify | 
+                        <i class="fas fa-lock me-1"></i> 
+                        HTTPS Secured | 
+                        <i class="fas fa-cloud me-1"></i> 
+                        Global CDN
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
+    </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let currentRole = 'patient';
-
-        function switchRole(role) {
-            currentRole = role;
-            document.querySelectorAll('.btn-role').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Update permissions
-            const perms = {
-                patient: { put: false, trail: false },
-                doctor: { put: true, trail: false },
-                admin: { put: true, trail: true }
-            };
-            const p = perms[role];
-
-            document.getElementById('perm-put').innerHTML = p.put ? '✅ Allowed' : '❌ Denied';
-            document.getElementById('perm-put').className = p.put ? 'permission-allowed' : 'permission-denied';
-
-            document.getElementById('perm-trail').innerHTML = p.trail ? '✅ Allowed' : '❌ Denied';
-            document.getElementById('perm-trail').className = p.trail ? 'permission-allowed' : 'permission-denied';
-
-            log(`IAM: Switched to ${role}Role`);
-        }
-
-        function simulateAction(action) {
-            const messages = {
-                download: '✅ S3 GetObject allowed – Medical report downloaded.',
-                upload: currentRole === 'patient' 
-                    ? '❌ S3 PutObject denied – PatientRole cannot upload reports.' 
-                    : '✅ S3 PutObject allowed – Lab report uploaded to encrypted S3.',
-                audit: currentRole === 'admin' 
-                    ? '✅ CloudTrail lookup allowed – Showing last 100 audit events.' 
-                    : '❌ CloudTrail lookup denied – AdminRole required.'
-            };
-            const msg = messages[action];
-            log(`Action: ${msg}`);
-            alert(msg);
-        }
-
-        function log(message) {
-            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const logEl = document.getElementById('actionLog');
-            logEl.innerHTML = `[${now}] ${message}<br>` + logEl.innerHTML;
-        }
-
-        function showCloudFrontUrl() {
-            const url = window.location.hostname.includes('cloudfront') 
-                ? window.location.href 
-                : 'https://your-distribution-id.cloudfront.net/demo.html';
-            alert(`🌍 CloudFront URL:\n${url}\n\nThis page is served globally via AWS CloudFront CDN.`);
-        }
-
-        // Initialize
-        switchRole('patient');
+        // Simple animation for feature cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
     </script>
 </body>
-
 </html>
