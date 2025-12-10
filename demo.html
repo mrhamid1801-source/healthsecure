@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live AWS Security Demo | HealthSecure Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --aws-orange: #FF9900;
+            --aws-dark: #232F3E;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .demo-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        .aws-badge {
+            background: linear-gradient(90deg, var(--aws-orange), #FF6600);
+            color: white;
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+        .permission-allowed {
+            color: #198754;
+            font-weight: bold;
+        }
+        .permission-denied {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .btn-role {
+            transition: all 0.3s;
+        }
+        .btn-role:hover {
+            transform: translateY(-3px);
+        }
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- HEADER -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-white fw-bold">
+                <i class="bi bi-shield-check"></i> HealthSecure – AWS Security Live Demo
+            </h1>
+            <p class="lead text-light">
+                HIPAA‑Compliant Patient Portal | IAM Roles | Encryption | Global CDN
+            </p>
+            <div class="mt-3">
+                <span class="aws-badge">Served via AWS CloudFront</span>
+                <span class="badge bg-success">HTTPS Enforced</span>
+                <span class="badge bg-info">Global Access</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- LEFT PANEL: IAM & PERMISSIONS -->
+            <div class="col-lg-4 mb-4">
+                <div class="demo-card p-4 h-100">
+                    <h4 class="text-dark mb-3"><i class="bi bi-person-badge"></i> IAM Role Simulation</h4>
+                    <div class="mb-4">
+                        <p class="mb-2"><strong>Current Role:</strong></p>
+                        <div class="btn-group w-100" role="group">
+                            <button class="btn btn-outline-primary btn-role active" onclick="switchRole('patient')">
+                                <i class="bi bi-person"></i> PatientRole
+                            </button>
+                            <button class="btn btn-outline-success btn-role" onclick="switchRole('doctor')">
+                                <i class="bi bi-stethoscope"></i> DoctorRole
+                            </button>
+                            <button class="btn btn-outline-danger btn-role" onclick="switchRole('admin')">
+                                <i class="bi bi-shield-check"></i> AdminRole
+                            </button>
+                        </div>
+                    </div>
+
+                    <h5><i class="bi bi-key"></i> Permissions</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between">
+                            s3:GetObject
+                            <span class="permission-allowed" id="perm-get">✅ Allowed</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            s3:PutObject
+                            <span class="permission-denied" id="perm-put">❌ Denied</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            rds:Connect
+                            <span class="permission-allowed" id="perm-rds">✅ Allowed</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            cloudtrail:LookupEvents
+                            <span class="permission-denied" id="perm-trail">❌ Denied</span>
+                        </li>
+                    </ul>
+
+                    <div class="mt-4">
+                        <h6><i class="bi bi-activity"></i> Quick Actions</h6>
+                        <button class="btn btn-success w-100 mb-2" onclick="simulateAction('download')">
+                            <i class="bi bi-cloud-download"></i> Download Medical Report
+                        </button>
+                        <button class="btn btn-warning w-100 mb-2" onclick="simulateAction('upload')">
+                            <i class="bi bi-cloud-upload"></i> Upload Lab Report
+                        </button>
+                        <button class="btn btn-info w-100" onclick="simulateAction('audit')">
+                            <i class="bi bi-list-check"></i> View Audit Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER PANEL: AWS STATUS & RESULTS -->
+            <div class="col-lg-5 mb-4">
+                <div class="demo-card p-4 h-100">
+                    <h4 class="text-dark mb-3"><i class="bi bi-aws"></i> AWS Service Status</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-success mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="bi bi-check-circle text-success"></i> S3</h5>
+                                    <p class="card-text">Bucket Encryption: <strong>Enabled (SSE‑S3)</strong></p>
+                                    <p class="card-text">Versioning: <strong>Active</strong></p>
+                                </div>
+                            </div>
+                            <div class="card border-primary mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="bi bi-check-circle text-primary"></i> RDS</h5>
+                                    <p class="card-text">Encryption: <strong>Enabled (KMS)</strong></p>
+                                    <p class="card-text">Multi‑AZ: <strong>Yes</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-warning mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="bi bi-check-circle text-warning"></i> CloudFront</h5>
+                                    <p class="card-text">HTTPS: <strong>Enforced</strong></p>
+                                    <p class="card-text">CDN: <strong>Global</strong></p>
+                                </div>
+                            </div>
+                            <div class="card border-info mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="bi bi-check-circle text-info"></i> IAM</h5>
+                                    <p class="card-text">MFA: <strong>Enabled</strong></p>
+                                    <p class="card-text">Least Privilege: <strong>Enforced</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="bi bi-terminal"></i> Action Result Log</h5>
+                        <div class="log-entry" id="actionLog">
+                            [08:30] IAM: Session started as PatientRole<br>
+                            [08:31] S3: GetObject allowed for patient_report.pdf<br>
+                            [08:32] S3: PutObject denied – insufficient permissions<br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: ARCHITECTURE & GLOBAL ACCESS -->
+            <div class="col-lg-3 mb-4">
+                <div class="demo-card p-4 h-100">
+                    <h4 class="text-dark mb-3"><i class="bi bi-diagram-3"></i> Architecture</h4>
+                    <div class="text-center mb-4">
+                        <img src="https://img.icons8.com/color/96/000000/amazon-web-services.png" class="mb-2">
+                        <p class="small">AWS Cloud‑Native Deployment</p>
+                    </div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> VPC with private/public subnets</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> EC2 in private subnet</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> RDS PostgreSQL encrypted</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> S3 for secure storage</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> CloudFront + WAF</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> CloudTrail + CloudWatch</li>
+                    </ul>
+                    <hr>
+                    <h6><i class="bi bi-globe"></i> Global Access</h6>
+                    <p class="small">This page is delivered via <strong>AWS CloudFront CDN</strong> from S3 origin. Encrypted in transit (TLS 1.2).</p>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-dark w-100" onclick="showCloudFrontUrl()">
+                            <i class="bi bi-link-45deg"></i> Show CloudFront URL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="text-center mt-5 pt-4">
+            <div class="text-light small">
+                <p>
+                    <i class="bi bi-code-slash"></i> Duo Behind Art : <strong>Gc Hamid Gc Cheema</strong> |
+                    IS‑348 Cloud CEP | AWS HIPAA‑Ready Architecture
+                </p>
+                <p class="text-light-50">
+                    🔐 This is a simulation for academic demonstration. Real AWS IAM policies, encryption, and logging are implemented in the backend.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'patient';
+
+        function switchRole(role) {
+            currentRole = role;
+            document.querySelectorAll('.btn-role').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update permissions
+            const perms = {
+                patient: { put: false, trail: false },
+                doctor: { put: true, trail: false },
+                admin: { put: true, trail: true }
+            };
+            const p = perms[role];
+
+            document.getElementById('perm-put').innerHTML = p.put ? '✅ Allowed' : '❌ Denied';
+            document.getElementById('perm-put').className = p.put ? 'permission-allowed' : 'permission-denied';
+
+            document.getElementById('perm-trail').innerHTML = p.trail ? '✅ Allowed' : '❌ Denied';
+            document.getElementById('perm-trail').className = p.trail ? 'permission-allowed' : 'permission-denied';
+
+            log(`IAM: Switched to ${role}Role`);
+        }
+
+        function simulateAction(action) {
+            const messages = {
+                download: '✅ S3 GetObject allowed – Medical report downloaded.',
+                upload: currentRole === 'patient' 
+                    ? '❌ S3 PutObject denied – PatientRole cannot upload reports.' 
+                    : '✅ S3 PutObject allowed – Lab report uploaded to encrypted S3.',
+                audit: currentRole === 'admin' 
+                    ? '✅ CloudTrail lookup allowed – Showing last 100 audit events.' 
+                    : '❌ CloudTrail lookup denied – AdminRole required.'
+            };
+            const msg = messages[action];
+            log(`Action: ${msg}`);
+            alert(msg);
+        }
+
+        function log(message) {
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const logEl = document.getElementById('actionLog');
+            logEl.innerHTML = `[${now}] ${message}<br>` + logEl.innerHTML;
+        }
+
+        function showCloudFrontUrl() {
+            const url = window.location.hostname.includes('cloudfront') 
+                ? window.location.href 
+                : 'https://your-distribution-id.cloudfront.net/demo.html';
+            alert(`🌍 CloudFront URL:\n${url}\n\nThis page is served globally via AWS CloudFront CDN.`);
+        }
+
+        // Initialize
+        switchRole('patient');
+    </script>
+</body>
+</html>
