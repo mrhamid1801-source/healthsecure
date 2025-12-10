@@ -1,62 +1,143 @@
-<script>
-    // Get role from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const roleFromUrl = urlParams.get('role');
-    
-    // Initialize AWS Simulator
-    const aws = new AWSCredentialsSimulator();
-    
-    function selectRole(role) {
-        // Remove selected class from all options
-        document.querySelectorAll('.role-option').forEach(option => {
-            option.classList.remove('selected');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Debug | HealthSecure</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .debug-console {
+            background: #1e1e1e;
+            color: #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    HealthSecure Portal
+                </h2>
+                <p class="text-muted">Debug Version</p>
+            </div>
+            
+            <div class="alert alert-info">
+                <h5>Debug Console</h5>
+                <div id="debugOutput" class="debug-console">
+                    Loading page...
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label fw-bold">Test Login (No MFA Required)</label>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" onclick="testLogin('patient')">
+                        <i class="fas fa-user-injured me-2"></i>Login as Patient
+                    </button>
+                    <button class="btn btn-success" onclick="testLogin('doctor')">
+                        <i class="fas fa-user-md me-2"></i>Login as Doctor
+                    </button>
+                    <button class="btn btn-warning" onclick="testLogin('admin')">
+                        <i class="fas fa-user-shield me-2"></i>Login as Admin
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="index.html" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debug logging function
+        function debugLog(message) {
+            const debugDiv = document.getElementById('debugOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+            console.log(message);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('DOM loaded successfully');
+            debugLog('Testing Font Awesome...');
+            
+            // Check if Font Awesome loaded
+            if (typeof window.FontAwesome === 'undefined') {
+                debugLog('WARNING: Font Awesome not loaded, adding dynamically...');
+                // Load Font Awesome dynamically
+                const faLink = document.createElement('link');
+                faLink.rel = 'stylesheet';
+                faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+                document.head.appendChild(faLink);
+                debugLog('Font Awesome loaded dynamically');
+            }
+            
+            debugLog('Page ready for login');
         });
-        
-        // Add selected class to clicked option
-        document.getElementById(role + 'Option').classList.add('selected');
-        
-        // Update IAM Role display
-        document.getElementById('iamRole').value = role.charAt(0).toUpperCase() + role.slice(1) + 'Role';
-        document.getElementById('roleArn').value = aws.roles[role].roleArn;
-        
-        // Store in session storage
-        sessionStorage.setItem('selectedRole', role);
-    }
-    
-    async function login() {
-        const role = sessionStorage.getItem('selectedRole') || 'patient';
-        const mfaCode = document.getElementById('mfaCode').value;
-        const username = document.getElementById('username').value;
-        
-        if (!username) {
-            showError('Please enter username');
-            return;
-        }
-        
-        if (!mfaCode || mfaCode.length !== 6) {
-            showError('Please enter valid 6-digit MFA code');
-            return;
-        }
-        
-        // Show loading
-        const loginBtn = document.querySelector('button[onclick="login()"]');
-        const originalText = loginBtn.innerHTML;
-        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating with AWS STS...';
-        loginBtn.disabled = true;
-        
-        try {
-            // Simulate AWS STS AssumeRole with MFA
-            const credentials = await aws.assumeRole(role, mfaCode);
+
+        // Simple test login function
+        function testLogin(role) {
+            debugLog(`Attempting login as ${role}...`);
             
-            // Store user info
-            sessionStorage.setItem('username', username);
+            // Simulate session storage
+            sessionStorage.setItem('currentRole', role);
+            sessionStorage.setItem('iamRole', role.charAt(0).toUpperCase() + role.slice(1) + 'Role');
             sessionStorage.setItem('loginTime', new Date().toLocaleString());
+            sessionStorage.setItem('mfaVerified', 'true');
             
-            // Show success message
-            showSuccess('Successfully authenticated! Assuming IAM Role...');
+            // Set permissions based on role
+            let permissions = [];
+            switch(role) {
+                case 'patient':
+                    permissions = ['s3:GetObject', 'rds:connect', 'logs:describe*'];
+                    break;
+                case 'doctor':
+                    permissions = ['s3:*', 'rds:*', 'logs:*', 'cloudtrail:LookupEvents'];
+                    break;
+                case 'admin':
+                    permissions = ['*'];
+                    break;
+            }
+            sessionStorage.setItem('iamPermissions', JSON.stringify(permissions));
             
-            // Redirect to appropriate dashboard after delay
+            debugLog(`Permissions set: ${permissions.join(', ')}`);
+            
+            // Redirect to dashboard
             setTimeout(() => {
+                debugLog(`Redirecting to ${role} dashboard...`);
                 switch(role) {
                     case 'patient':
                         window.location.href = 'patient-dashboard.html';
@@ -68,114 +149,11 @@
                         window.location.href = 'admin-panel.html';
                         break;
                 }
-            }, 1500);
-            
-        } catch (error) {
-            showError(error.message);
-            loginBtn.innerHTML = originalText;
-            loginBtn.disabled = false;
+            }, 1000);
         }
-    }
-    
-    function showError(message) {
-        const errorDiv = document.getElementById('errorMessage') || createMessageDiv('errorMessage', 'danger');
-        errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-        errorDiv.style.display = 'block';
-        
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 5000);
-    }
-    
-    function showSuccess(message) {
-        const successDiv = document.getElementById('successMessage') || createMessageDiv('successMessage', 'success');
-        successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-        successDiv.style.display = 'block';
-    }
-    
-    function createMessageDiv(id, type) {
-        const div = document.createElement('div');
-        div.id = id;
-        div.className = `alert alert-${type} mt-3`;
-        div.style.display = 'none';
-        document.querySelector('.login-card').appendChild(div);
-        return div;
-    }
-    
-    // Initialize based on URL parameter
-    if (roleFromUrl && ['patient', 'doctor', 'admin'].includes(roleFromUrl)) {
-        selectRole(roleFromUrl);
-    } else {
-        selectRole('patient');
-    }
-    
-    // Add MFA input dynamically
-    document.addEventListener('DOMContentLoaded', function() {
-        const mfaBox = document.querySelector('.mfa-box');
-        mfaBox.innerHTML = `
-            <h6><i class="fas fa-mobile-alt me-2"></i> AWS IAM MFA Authentication Required</h6>
-            <p class="small mb-2">Your IAM role requires Multi-Factor Authentication. Enter the 6-digit code from your virtual MFA device.</p>
-            <div class="input-group">
-                <span class="input-group-text">
-                    <i class="fas fa-shield-alt"></i>
-                </span>
-                <input type="text" class="form-control" id="mfaCode" placeholder="000000" maxlength="6" pattern="\\d{6}">
-                <button class="btn btn-outline-secondary" type="button" onclick="generateMFACode()">
-                    <i class="fas fa-sync-alt"></i> Simulate MFA
-                </button>
-            </div>
-            <div id="mfaDeviceInfo" class="mt-2 small text-muted">
-                <i class="fas fa-mobile-alt"></i> Virtual MFA Device: Authy/Google Authenticator
-            </div>
-        `;
-        
-        // Add role ARN display
-        const roleField = document.querySelector('#iamRole').parentElement;
-        const arnHtml = `
-            <div class="mb-3">
-                <label class="form-label fw-bold">IAM Role ARN</label>
-                <div class="input-group">
-                    <span class="input-group-text">
-                        <i class="fab fa-aws"></i>
-                    </span>
-                    <input type="text" class="form-control" id="roleArn" value="${aws.roles.patient.roleArn}" readonly>
-                    <button class="btn btn-outline-info" type="button" onclick="copyToClipboard('roleArn')">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-                <small class="text-muted">AWS IAM Role Amazon Resource Name</small>
-            </div>
-        `;
-        roleField.insertAdjacentHTML('afterend', arnHtml);
-    });
-    
-    function generateMFACode() {
-        // Generate a random 6-digit code (simulating MFA device)
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        document.getElementById('mfaCode').value = code;
-        
-        // Show notification
-        const infoDiv = document.getElementById('mfaDeviceInfo');
-        infoDiv.innerHTML = `<i class="fas fa-check text-success"></i> MFA Code Generated: ${code} (Valid for 30 seconds)`;
-        infoDiv.className = 'mt-2 small text-success';
-        
-        setTimeout(() => {
-            infoDiv.innerHTML = `<i class="fas fa-mobile-alt"></i> Virtual MFA Device: Authy/Google Authenticator`;
-            infoDiv.className = 'mt-2 small text-muted';
-        }, 30000);
-    }
-    
-    function copyToClipboard(elementId) {
-        const element = document.getElementById(elementId);
-        element.select();
-        document.execCommand('copy');
-        
-        // Show copied notification
-        const originalText = element.nextElementSibling.innerHTML;
-        element.nextElementSibling.innerHTML = '<i class="fas fa-check"></i> Copied to clipboard!';
-        
-        setTimeout(() => {
-            element.nextElementSibling.innerHTML = originalText;
-        }, 2000);
-    }
-</script>
+
+        // Test if basic JS is working
+        debugLog('JavaScript is working');
+    </script>
+</body>
+</html>
